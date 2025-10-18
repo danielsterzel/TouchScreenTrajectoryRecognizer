@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TouchScreenTrajectoryRecognizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="menu-bar">
+    <ul>
+        <li>
+            <button onclick="scrollToSection('title-section')">HomePage</button>
+        </li>
+        <li>
+            <button onclick="scrollToSection('canvas-section')">Canvas</button>
+        </li>
+
+        <li>
+            <button onclick="scrollToSection('implementation-section')">Go to Implementation</button>
+        </li>
+
+    </ul>
+</div>
+
+<div class="content">
+
+    <div class="title-section">
+        <section id="title-section">
+            <h1>Touch Screen Trajectory Recognizer</h1>
+            <p>The goal of the project is to track and recognize a users finger trajectory on a 2D touch screen using
+                Machine
+                Learning.</p>
+        </section>
+    </div>
+
+    <section class="canvas-section" id="canvas-section">
+        <h2>Canvas</h2>
+        <div class="canvas-container">
+            <canvas id="drawCanvas" width="500" height="400"></canvas>
+        </div>
+        <div class="canvas-buttons">
+            <button id="clearCanvas">Clear</button>
+            <button id="sendData">Send</button>
+        </div>
+    </section>
+
+    <section class="implementation-section" id="implementation-section">
+        <h2>Implementation</h2>
+        <p>Lorem ipsum</p>
+    </section>
+
+
+    <script src="app.js"></script>
+</div>
+</body>
+</html>
