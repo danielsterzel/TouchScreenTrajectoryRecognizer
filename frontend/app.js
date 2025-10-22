@@ -44,6 +44,32 @@ document.getElementById('clearCanvas').addEventListener('click', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     points = [];
 });
+function returnJson(points){
+    return points.map(point => ({x: point.x, y:point.y, t: point.t}))
+}
+
+document.getElementById('sendData').addEventListener('click', () => {
+    const data = returnJson(points);
+    const json = JSON.stringify(data, null, 2);
+
+    // creates a blob object - Binary Large Object in memory.
+    const blob = new Blob([json], {type: 'application/json'});
+
+    const url = URL.createObjectURL(blob); // in order for the file to be downloadable
+    // we create a temporary URL that points to the blob object in memory
+    // returns a temporary URL string
+    // the url exists only in the current browser tab and until
+    // you revoke it with URL.revokeObjectURL(url)
+    const ts = new Date().toISOString().replace(/[:.]/g,  '-');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `points-${ts}`;
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+})
 
 canvas.addEventListener('mousedown', startDrawing);
 canvas.addEventListener('mousemove', draw);
@@ -60,3 +86,13 @@ function scrollToSection(id) {
     const y = section.getBoundingClientRect().top + padding;
     window.scrollTo({top: y, behavior: 'smooth'});
 }
+
+const menuBar = document.querySelector('.menu-bar');
+document.addEventListener('mousemove', (e) => {
+    if(e.clientY < 50){ // if mouse is within 50 px of the top
+        menuBar.classList.add('visible');
+    }else {
+        menuBar.classList.remove('visible');
+    }
+});
+
