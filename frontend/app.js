@@ -60,7 +60,7 @@ document.getElementById('sendData').addEventListener('click', () => {
     // returns a temporary URL string
     // the url exists only in the current browser tab and until
     // you revoke it with URL.revokeObjectURL(url)
-    const ts = new Date().toISOString().replace(/[:.]/g,  '-');
+    const ts = new Date().toISOString().replace(/[:.]/g,  '-').replace(/T/g," At ");
     const a = document.createElement('a');
     a.href = url;
     a.download = `points-${ts}`;
