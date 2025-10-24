@@ -39,11 +39,12 @@ function stopDrawing(e) {
     ctx.closePath();
     console.log("Zarejestrowane punkty: ", points);
 }
-
-document.getElementById('clearCanvas').addEventListener('click', () => {
+function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     points = [];
-});
+}
+document.getElementById('clearCanvas').addEventListener('click', clearCanvas);
+
 function returnJson(points){
     return points.map(point => ({x: point.x, y:point.y, t: point.t}))
 }
@@ -80,6 +81,8 @@ document.getElementById('sendData').addEventListener('click', () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+
+    clearCanvas();
 })
 
 canvas.addEventListener('mousedown', startDrawing);
