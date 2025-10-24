@@ -62,11 +62,22 @@ document.getElementById('sendData').addEventListener('click', () => {
     // you revoke it with URL.revokeObjectURL(url)
     const ts = new Date().toISOString().replace(/[:.]/g,  '-').replace(/T/g," At ");
     const a = document.createElement('a');
+    const p = document.createElement('p');
+    p.textContent = "Data was sent successfully!";
+    p.style.zIndex = "9999";
+    p.style.color = "lime";
+    p.style.fontSize = "30px";
+    p.style.top = "50%";
+    p.style.left = "50%";
+    p.style.position = "absolute";
+    document.body.appendChild(p);
+    setTimeout(() => {
+        document.body.removeChild(p);
+    }, 4000)
     a.href = url;
     a.download = `points-${ts}`;
     document.body.appendChild(a);
     a.click();
-
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 })
