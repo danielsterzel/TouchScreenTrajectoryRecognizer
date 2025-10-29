@@ -51,37 +51,28 @@ function returnJson(points){
 
 document.getElementById('sendData').addEventListener('click', () => {
     const data = returnJson(points);
-    const json = JSON.stringify(data, null, 2);
 
-    // creates a blob object - Binary Large Object in memory.
-    const blob = new Blob([json], {type: 'application/json'});
-
-    const url = URL.createObjectURL(blob); // in order for the file to be downloadable
-    // we create a temporary URL that points to the blob object in memory
-    // returns a temporary URL string
-    // the url exists only in the current browser tab and until
-    // you revoke it with URL.revokeObjectURL(url)
-    const ts = new Date().toISOString().replace(/[:.]/g,  '-').replace(/T/g," At ");
-    const a = document.createElement('a');
-    const p = document.createElement('p');
-    p.textContent = "Data was sent successfully!";
-    p.style.zIndex = "9999";
-    p.style.color = "lime";
-    p.style.fontSize = "30px";
-    p.style.top = "50%";
-    p.style.left = "50%";
-    p.style.position = "absolute";
-    document.body.appendChild(p);
-    setTimeout(() => {
-        document.body.removeChild(p);
-    }, 4000)
-    a.href = url;
-    a.download = `points-${ts}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
+    fetch("/submit-points", {
+        method: "POST",
+        headers: {"Content-Type" : "application/json"},
+        body: JSON.stringify(data)
+    })
+        .then(response => response.json())
+        .then(result => {
+            console.log("Server response: ", result)
+            const p = document.createElement('p');
+            p.textContent = "Data sent successfully!";
+            p.styleColor = "lime";
+            p.style.fontSize = "30px";
+            p.style.zIndex = "9999";
+            p.style.top = "50%";
+            p.style.left = "50%";
+            document.body.appendChild(p);
+            setTimeout(() => {
+                document.body.removeChild(p);
+            }, 4000)
+        })
+        .catch(err => console.error("Error sending points: ", err));
     clearCanvas();
 })
 
