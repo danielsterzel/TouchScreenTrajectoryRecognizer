@@ -47,5 +47,7 @@ def submit_points():
          }
     )
 
+func.shift_points_to_0_0(DATA_DIR)
+
 if __name__ == "__main__":
     app.run(debug=True)
