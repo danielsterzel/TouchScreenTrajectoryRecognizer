@@ -4,6 +4,19 @@ const ctx = canvas.getContext('2d');
 let drawing = false;
 let points = [];
 
+function resizeCanvas() {
+  const rect = canvas.getBoundingClientRect();
+  const ratio = window.devicePixelRatio || 1;
+
+  canvas.width = rect.width * ratio;
+  canvas.height = rect.height * ratio;
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+  clearCanvas();
+}
+
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 function getCanvasPosition(e) {
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX || e.touches[0].clientX) - rect.left;
@@ -62,7 +75,7 @@ document.getElementById('sendData').addEventListener('click', () => {
             console.log("Server response: ", result)
             const p = document.createElement('p');
             p.textContent = "Data sent successfully!";
-            p.styleColor = "lime";
+            p.style.color = "lime";
             p.style.fontSize = "30px";
             p.style.zIndex = "9999";
             p.style.top = "50%";
