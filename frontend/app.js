@@ -37,7 +37,7 @@ function stopDrawing(e) {
     e.preventDefault();
     drawing = false;
     ctx.closePath();
-    console.log("Zarejestrowane punkty: ", points);
+    console.log("Registered points: ", points);
 }
 function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);

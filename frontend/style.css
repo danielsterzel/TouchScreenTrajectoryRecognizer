@@ -136,6 +136,8 @@ body {
 }
 
 #drawCanvas {
+    width: 90vw;
+    height: 60vh;
     background-color: #ffffff10;
     border: 2px solid white;
     border-radius: 10px;
@@ -169,6 +171,10 @@ body {
 }
 
 @media(max-width: 600px){
+    .content {
+        padding: 60px 20px 20px;
+
+    }
     .menu-bar {
         height: 40px;
         position: fixed;
@@ -188,11 +194,20 @@ body {
         display: flex;
         flex-direction: column;
     }
+    .title-section {
+        margin-top: 80px;
+        width: 90%;
+    }
+    .canvas-section,
+    .implementation-section{
+        margin-top: 80px;
+    }
     .title-section h1{
-        justify-content: center;
+        text-align: center;
         font-size: 35px;
     }
     .title-section p {
+        text-align: center;
         font-size: 15px;
     }
     .canvas-section h2{
