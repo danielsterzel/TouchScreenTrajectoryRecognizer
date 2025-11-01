@@ -20,7 +20,7 @@ def get_json_files_lazily(root_dir):
 def shift_points_to_0_0(root_dir):
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    output_dir = os.path.join(script_dir, "shifted_data")
+    output_dir = os.path.join(script_dir, "processed_data")
 
     for json_file_path,json_file_data in get_json_files_lazily(root_dir):
         if not json_file_data:
@@ -37,11 +37,14 @@ def shift_points_to_0_0(root_dir):
         with open(new_path, 'w') as f:
             json.dump(json_file_data, f, indent=2)  # type: ignore
 
+    return output_dir
+
 def get_x_y_coordinates_from_json(json_file_data):
     points = [(p['x'], p['y']) for p in json_file_data]
     return points
 
 def resample_trajectory(trajectory_data_from_shifted_json_file, num_of_samples = 100):
+
     trajectory_points = np.array(get_x_y_coordinates_from_json(trajectory_data_from_shifted_json_file))
     x, y = trajectory_points[:, 0], trajectory_points[:, 1]
 
@@ -66,3 +69,21 @@ def normalize_points(resampled_trajectory_data):
     scale = np.sqrt((x.max() - x.min())**2 + (y.max() - y.min())**2)
     normalized_points = resampled_trajectory_data / scale
     return normalized_points
+
+
+def preprocess_data_for_model(data_root_dir, num_of_samples = 100):
+    """
+    Preprocesses data for AI model:
+        1. shifts trajectory points to (0,0)
+        2. Resamples trajectory points so that each trajectory has the same number of samples
+        3. Saves final data in processed_data folder.
+    """
+    processed_data_dir = shift_points_to_0_0(data_root_dir)
+    for json_file_path, json_data in get_json_files_lazily(processed_data_dir):
+        resampled = resample_trajectory(json_data, num_of_samples)
+        normalized_points = normalize_points(resampled)
+
+        with open(json_file_path, 'w') as f:
+            json.dump(normalized_points.tolist(), f, indent=2) # type: ignore
+
+    print("All trajectories have been preprocessed and saved in: processed_data folder . . .")

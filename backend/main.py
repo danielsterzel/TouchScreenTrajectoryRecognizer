@@ -39,15 +39,15 @@ def submit_points():
 
     counter += 1
 
+    func.preprocess_data_for_model(DATA_DIR)
+
     return jsonify(
         {"status": "success",
          "file": filename,
          "points received": len(data)
-
          }
     )
 
-func.shift_points_to_0_0(DATA_DIR)
 
 if __name__ == "__main__":
     app.run(debug=True)
