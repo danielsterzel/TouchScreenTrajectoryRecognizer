@@ -1,13 +1,28 @@
 const canvas = document.getElementById('drawCanvas');
 const ctx = canvas.getContext('2d');
 
+function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    const scale = window.devicePixelRatio;
+
+    canvas.width = rect.width * scale;
+    canvas.height = rect.height * scale;
+
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+}
+
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
 let drawing = false;
 let points = [];
 
 function getCanvasPosition(e) {
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = ((e.clientX || e.touches[0].clientX) - rect.left) * scaleX;
+    const y = ((e.clientY || e.touches[0].clientY) - rect.top) * scaleY;
     return {x, y}
 }
 
