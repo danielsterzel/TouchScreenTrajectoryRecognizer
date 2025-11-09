@@ -17,19 +17,6 @@ window.addEventListener('resize', resizeCanvas);
 let drawing = false;
 let points = [];
 
-function resizeCanvas() {
-  const rect = canvas.getBoundingClientRect();
-  const ratio = window.devicePixelRatio || 1;
-
-  canvas.width = rect.width * ratio;
-  canvas.height = rect.height * ratio;
-  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-
-  clearCanvas();
-}
-
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
 function getCanvasPosition(e) {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
