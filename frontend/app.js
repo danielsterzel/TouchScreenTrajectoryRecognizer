@@ -10,7 +10,8 @@ function resizeCanvas() {
 
   canvas.width = rect.width * ratio;
   canvas.height = rect.height * ratio;
-  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(ratio, ratio);
 
   clearCanvas();
 }
@@ -19,9 +20,15 @@ resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 function getCanvasPosition(e) {
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches[0].clientY) - rect.top;
-    return {x, y}
+
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+  // Use CSS-pixel space directly
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+
+  return { x, y };
 }
 
 function startDrawing(e) {
@@ -29,9 +36,9 @@ function startDrawing(e) {
     drawing = true;
     points = [];
     const position = getCanvasPosition(e);
-    points.push({x: position.x, y: position.y, t: Date.now()});
     ctx.beginPath();
     ctx.moveTo(position.x, position.y);
+    points.push({x: position.x, y: position.y, t: Date.now()});
 }
 
 function draw(e) {
@@ -43,6 +50,8 @@ function draw(e) {
     ctx.lineTo(position.x, position.y);
     ctx.strokeStyle = "white";
     ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     ctx.stroke();
     points.push({x: position.x, y: position.y, t: Date.now()});
 }
