@@ -45,8 +45,6 @@ def submit_points():
 
     counter += 1
 
-    func.preprocess_data_for_model(DATA_DIR)
-
     return jsonify(
         {"status": "success",
          "file": filename,
@@ -54,6 +52,6 @@ def submit_points():
          }
     )
 
-
 if __name__ == "__main__":
+    func.preprocess_data_for_model(DATA_DIR)
     app.run(host="0.0.0.0", port=5000,debug=True)

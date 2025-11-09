@@ -1,5 +1,6 @@
 import os
 import json
+import shutil
 import numpy as np
 from scipy.interpolate import interp1d
 
@@ -87,3 +88,13 @@ def preprocess_data_for_model(data_root_dir, num_of_samples = 100):
             json.dump(normalized_points.tolist(), f, indent=2) # type: ignore
 
     print("All trajectories have been preprocessed and saved in: processed_data folder . . .")
+
+def remove_and_reprocess_data(data_root_dir="backend/data"):
+    processed_data_dir = "backend/processed_data"
+
+    if os.path.exists(processed_data_dir):
+        print("Removing old processed_data folder")
+        shutil.rmtree(processed_data_dir)
+    print("Reprocessing data . . .")
+    preprocess_data_for_model(data_root_dir)
+    print("Saved preprocessed data in: processed_data folder")
