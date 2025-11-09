@@ -21,6 +21,7 @@ function getCanvasPosition(e) {
     const rect = canvas.getBoundingClientRect();
     const x = ((e.clientX || e.touches[0].clientX) - rect.left);
     const y = ((e.clientY || e.touches[0].clientY) - rect.top);
+
     return {x, y}
 }
 
@@ -58,8 +59,17 @@ function clearCanvas() {
 }
 document.getElementById('clearCanvas').addEventListener('click', clearCanvas);
 
+function scaleDataPoints(points){
+    const scale = window.devicePixelRatio;
+    return points.map(point => ({
+        x: point.x * scale,
+        y: point.y * scale,
+        t: point.t
+    }));
+}
 function returnJson(points){
-    return points.map(point => ({x: point.x, y:point.y, t: point.t}))
+    points = scaleDataPoints(points);
+    return points.map(point => ({x: point.x, y:point.y, t: point.t}));
 }
 
 document.getElementById('sendData').addEventListener('click', () => {
