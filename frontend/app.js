@@ -19,10 +19,8 @@ let points = [];
 
 function getCanvasPosition(e) {
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = ((e.clientX || e.touches[0].clientX) - rect.left) * scaleX;
-    const y = ((e.clientY || e.touches[0].clientY) - rect.top) * scaleY;
+    const x = ((e.clientX || e.touches[0].clientX) - rect.left);
+    const y = ((e.clientY || e.touches[0].clientY) - rect.top);
     return {x, y}
 }
 
