@@ -1,28 +1,33 @@
 const canvas = document.getElementById('drawCanvas');
 const ctx = canvas.getContext('2d');
 
+let drawing = false;
+let points = [];
+
 function resizeCanvas() {
-    const rect = canvas.getBoundingClientRect();
-    const scale = window.devicePixelRatio;
+  const rect = canvas.getBoundingClientRect();
+  const ratio = window.devicePixelRatio || 1;
 
-    canvas.width = rect.width * scale;
-    canvas.height = rect.height * scale;
+  canvas.width = rect.width * ratio;
+  canvas.height = rect.height * ratio;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(ratio, ratio);
 
-    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  clearCanvas();
 }
 
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
-
-let drawing = false;
-let points = [];
-
 function getCanvasPosition(e) {
     const rect = canvas.getBoundingClientRect();
-    const x = ((e.clientX || e.touches[0].clientX) - rect.left);
-    const y = ((e.clientY || e.touches[0].clientY) - rect.top);
 
-    return {x, y}
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+
+  return { x, y };
 }
 
 function startDrawing(e) {
@@ -30,9 +35,9 @@ function startDrawing(e) {
     drawing = true;
     points = [];
     const position = getCanvasPosition(e);
-    points.push({x: position.x, y: position.y, t: Date.now()});
     ctx.beginPath();
     ctx.moveTo(position.x, position.y);
+    points.push({x: position.x, y: position.y, t: Date.now()});
 }
 
 function draw(e) {
@@ -44,6 +49,8 @@ function draw(e) {
     ctx.lineTo(position.x, position.y);
     ctx.strokeStyle = "white";
     ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     ctx.stroke();
     points.push({x: position.x, y: position.y, t: Date.now()});
 }
@@ -59,17 +66,8 @@ function clearCanvas() {
 }
 document.getElementById('clearCanvas').addEventListener('click', clearCanvas);
 
-function scaleDataPoints(points){
-    const scale = window.devicePixelRatio;
-    return points.map(point => ({
-        x: point.x * scale,
-        y: point.y * scale,
-        t: point.t
-    }));
-}
 function returnJson(points){
-    points = scaleDataPoints(points);
-    return points.map(point => ({x: point.x, y:point.y, t: point.t}));
+    return points.map(point => ({x: point.x, y:point.y, t: point.t}))
 }
 
 document.getElementById('sendData').addEventListener('click', () => {

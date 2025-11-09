@@ -136,8 +136,8 @@ body {
 }
 
 #drawCanvas {
-    width: 90vw;
-    height: 90vh;
+    width: 100%;
+    height: auto;
     background-color: #ffffff10;
     border: 2px solid white;
     border-radius: 10px;
