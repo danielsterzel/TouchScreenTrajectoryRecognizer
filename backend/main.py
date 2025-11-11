@@ -4,21 +4,20 @@ from flask import abort
 import json
 import os
 import functions as func
-
+import constants as const
 # from markupsafe import escape
 
-app = Flask(__name__, static_folder="../frontend", template_folder="../frontend")
+app = Flask(__name__, static_folder=const.FRONTEND_DIR, template_folder=const.FRONTEND_DIR)
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-ALLOWED_IP_ADDRESSES = ["192.168.40.23", "127.0.0.1", "192.168.40.46"]
-os.makedirs(DATA_DIR, exist_ok=True)
 
-counter = func.get_next_index(DATA_DIR)
+os.makedirs(const.DATA_DIR, exist_ok=True)
+
+counter = func.get_next_index(const.DATA_DIR)
 
 
 @app.before_request
 def limit_remote_addr():
-    if request.remote_addr not in ALLOWED_IP_ADDRESSES:
+    if request.remote_addr not in const.ALLOWED_IP_ADDRESSES:
         abort(403)
 @app.route('/')
 def index():
@@ -39,7 +38,7 @@ def submit_points():
 
 
     filename = f"points_{counter}.json"
-    filepath = os.path.join(DATA_DIR, filename)
+    filepath = os.path.join(const.DATA_DIR, filename)
     with open(filepath, "w") as file:
         json.dump(data, file, indent=2)  # type: ignore
 
@@ -53,5 +52,5 @@ def submit_points():
     )
 
 if __name__ == "__main__":
-    func.preprocess_data_for_model(DATA_DIR)
+    func.preprocess_data_for_model()
     app.run(host="0.0.0.0", port=5000,debug=True)
