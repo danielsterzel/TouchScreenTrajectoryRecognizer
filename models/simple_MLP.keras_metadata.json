@@ -1,0 +1,16 @@
+{
+    "model_type": "mlp",
+    "input_shape": [
+        200
+    ],
+    "unique_classes_count": 3,
+    "class_names": [
+        "circle",
+        "rectangle",
+        "triangle"
+    ],
+    "metrics": [
+        "accuracy"
+    ],
+    "loss": "sparse_categorical_crossentropy"
+}
