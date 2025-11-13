@@ -26,8 +26,8 @@ def load_preprocessed_data(data_dir):
 
     return np.array(data), np.array(label)
 
-def return_model_if_exists(filename, directory=const.MODELS_DIR):
+def return_model_path_if_exists(filename, directory=const.MODELS_DIR):
     if not filename.endswith(".keras"):
         filename += ".keras"
     path = os.path.join(directory, filename)
-    return load_model(path) if os.path.exists(path) else None
+    return path if os.path.exists(path) else None

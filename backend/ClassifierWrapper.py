@@ -22,7 +22,7 @@ class ClassifierWrapper:
         "start_from_epoch"
     }
 
-    def __init__(self, model_type, labels, input_shape=(100, 2)):
+    def __init__(self, labels=None, model_type=None, input_shape=(100, 2)):
 
         self.input_shape = input_shape
         self.encoder = LabelEncoder()
@@ -30,14 +30,49 @@ class ClassifierWrapper:
         self.model_type = model_type
         self.train_set = None
         self.test_set = None
-        self.unique_classes_count = len(np.unique(self.labels))
-        self.output_activation_function = 'sigmoid' if self.unique_classes_count == 2 else 'softmax'
-        self.encoded_labels = self.encoder.fit_transform(labels)
-        self.loss = 'binary_crossentropy' if self.output_activation_function == 'sigmoid' else 'sparse_categorical_crossentropy'
+        if labels is not None:
+            self.unique_classes_count = len(np.unique(labels))
+            self.output_activation_function = 'sigmoid' if self.unique_classes_count == 2 else 'softmax'
+            self.encoded_labels = self.encoder.fit_transform(labels)
+            self.loss = 'binary_crossentropy' if self.output_activation_function == 'sigmoid' else 'sparse_categorical_crossentropy'
+        else:
+            self.unique_classes_count = None
+            self.output_activation_function = None
+            self.encoded_labels = None
+            self.loss = None
+
         self.metrics = ['accuracy']
         self.early_stoppers = []
         self.model = None
         self.history = None
+
+    def load_model(self, filepath, json_config_path):
+        if not os.path.isfile(filepath):
+            raise FileNotFoundError(f"Model file {filepath} not found.")
+
+        if not os.path.isfile(json_config_path):
+            raise FileNotFoundError(f"Config file not found: {json_config_path}.")
+
+        self.model = models.load_model(filepath)
+
+        with open(json_config_path, "r") as f:
+            json_data = json.load(f)
+        for param, value in json_data.items():
+            setattr(self, param, value)
+
+        if "class_names" in json_data:
+            self.encoder.classes_ = np.array(json_data["class_names"])
+
+        if "labels" in json_data:
+            self.labels = np.array(json_data["labels"])
+            self.encoded_labels = self.encoder.fit_transform(self.labels)
+
+        history_file_path = filepath +  "history.json"
+        if os.path.isfile(history_file_path):
+            with open(history_file_path, 'r') as f:
+                self.history = json.load(f)
+
+        print(f"Successfully loaded model from {filepath} and it's params from {json_config_path} config file.")
 
     def _create_mlp(self):
 
@@ -211,7 +246,9 @@ class ClassifierWrapper:
             y_pred = (y_pred_probs > 0.5).astype(int).reshape(-1)
         else:
             y_pred = np.argmax(y_pred_probs, axis=1)
-
+        if not hasattr(self.encoder, 'classes_'):
+            print("LabelEncoder not fitted. Returning numeric predictions only.")
+            return y_pred
         if summary:
             correct_classifications_count_count = np.sum(y_pred == y_test)
             print(f"Correct classifications: {correct_classifications_count_count}")
@@ -243,6 +280,7 @@ class ClassifierWrapper:
             "class_names": self.encoder.classes_.tolist(),
             "metrics": self.metrics,
             "loss": self.loss,
+            "labels": self.labels.tolist() if isinstance(self.labels, np.ndarray) else self.labels,
         }
         with open(metadata_path, "w") as f:
             json.dump(metadata, f, indent=4) # type: ignore

@@ -4,12 +4,19 @@ from ClassifierWrapper import ClassifierWrapper
 
 data, labels = mrf.load_preprocessed_data(const.PROCESSED_DATA_DIR)
 
-hybrid_model = ClassifierWrapper(
-    model_type="hybrid_cnn_lstm",
-    labels=labels,
-)
-hybrid_model.build_model()
-hybrid_model.prepare_data_for_model(data, 0.2)
-hybrid_model.fit_compile_model(epochs=60, batch_size=16, save_history=True)
-hybrid_model.save_model(filename="Hybrid_CNN_LSTM")
+file = mrf.return_model_path_if_exists("Hybrid_CNN_LSTM")
+
+if file:
+    hybrid_model = ClassifierWrapper()
+    hybrid_model.load_model(file, file + "_metadata.json")
+    hybrid_model.prepare_data_for_model(data, 0.2)
+else:
+    hybrid_model = ClassifierWrapper(
+        model_type="hybrid_cnn_lstm",
+        labels=labels,
+    )
+    hybrid_model.build_model()
+    hybrid_model.prepare_data_for_model(data, 0.2)
+    hybrid_model.fit_compile_model(epochs=60, batch_size=16, save_history=True)
+    hybrid_model.save_model(filename="Hybrid_CNN_LSTM")
 hybrid_model.predict(summary=True)
