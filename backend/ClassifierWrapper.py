@@ -116,7 +116,18 @@ class ClassifierWrapper:
         return cnn_1d
 
     def _create_hybrid_cnn_lstm(self):
-        pass
+        hybrid = models.Sequential([
+            layers.Input(shape = self.input_shape),
+            layers.Conv1D(64, kernel_size=3, activation="relu"),
+            layers.MaxPooling1D(pool_size=2),
+            layers.Conv1D(128, kernel_size=3, activation="relu"),
+            layers.Dropout(0.3),
+            layers.LSTM(64),
+            layers.Dense(64, activation="relu"),
+            layers.Dense(self.unique_classes_count, activation=self.output_activation_function),
+        ])
+
+        return hybrid
 
     def build_model(self):
         match self.model_type:
@@ -127,8 +138,7 @@ class ClassifierWrapper:
             case "mlp":
                 self.model = self._create_mlp()
             case "hybrid_cnn_lstm":
-                pass
-                # self.model = self._create_hybrid_cnn_lstm
+                self.model = self._create_hybrid_cnn_lstm()
             case _:
                 raise ValueError(
                     "Invalid model type supported models types are: 1.cnn\n 2.lstm\n 3.mlp\n 4.hybrid_cnn_lstm")
