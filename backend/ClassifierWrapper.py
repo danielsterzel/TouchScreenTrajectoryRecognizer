@@ -11,8 +11,19 @@ import json
 
 class ClassifierWrapper:
     available_model_types = ["cnn", "lstm", "mlp", "hybrid_cnn_lstm"]
+    EARLY_STOPPER_PUBLIC_PARAMS = {
+        "monitor",
+        "min_delta",
+        "patience",
+        "verbose",
+        "mode",
+        "baseline",
+        "restore_best_weights",
+        "start_from_epoch"
+    }
 
     def __init__(self, model_type, labels, input_shape=(100, 2)):
+
         self.input_shape = input_shape
         self.encoder = LabelEncoder()
         self.labels = labels
@@ -24,6 +35,7 @@ class ClassifierWrapper:
         self.encoded_labels = self.encoder.fit_transform(labels)
         self.loss = 'binary_crossentropy' if self.output_activation_function == 'sigmoid' else 'sparse_categorical_crossentropy'
         self.metrics = ['accuracy']
+        self.early_stoppers = []
         self.model = None
         self.history = None
 
@@ -54,6 +66,27 @@ class ClassifierWrapper:
         )
 
         return [early_stopper, reduce_lr]
+
+    def populate_early_stoppers_with_default(self):
+        self.early_stoppers = self._get_default_callbacks()
+
+    def show_early_stoppers(self):
+        for early_stopper in self.early_stoppers:
+            config = early_stopper.get_config()
+            print(config)
+
+    def change_early_stopper_parameter(self, early_stopper, param, value):
+        if not hasattr(early_stopper, param):
+            raise AttributeError(f"Specified early stopper:{early_stopper} has no attribute:{param}")
+        if param not in self.EARLY_STOPPER_PUBLIC_PARAMS:
+            raise AttributeError(f"{param} is not a valid parameter")
+        setattr(early_stopper, param, value)
+        print(f"Updated early stopper:{param} -> {value}")
+
+    def change_all_early_stoppers(self, param, value):
+        for callback in self.early_stoppers:
+            self.change_early_stopper_parameter(callback, param, value)
+
     def _create_lstm(self):
 
         lstm_model = models.Sequential([
@@ -68,7 +101,19 @@ class ClassifierWrapper:
         return lstm_model
 
     def _create_1d_cnn(self):
-        pass
+
+        cnn_1d = models.Sequential([
+            layers.Input(shape = self.input_shape),
+            layers.Conv1D(64, kernel_size=3, activation="relu"),
+            layers.MaxPooling1D(pool_size=2),
+            layers.Conv1D(128, kernel_size=3, activation="relu"),
+            layers.GlobalAveragePooling1D(),
+            layers.Dropout(0.3),
+            layers.Dense(64, activation="relu"),
+            layers.Dense(self.unique_classes_count, activation=self.output_activation_function),
+        ])
+
+        return cnn_1d
 
     def _create_hybrid_cnn_lstm(self):
         pass
@@ -76,8 +121,7 @@ class ClassifierWrapper:
     def build_model(self):
         match self.model_type:
             case "cnn":
-                pass
-                # self.model = self._create_1d_cnn()
+                self.model = self._create_1d_cnn()
             case "lstm":
                 self.model = self._create_lstm()
             case "mlp":

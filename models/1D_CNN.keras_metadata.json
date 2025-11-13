@@ -1,0 +1,17 @@
+{
+    "model_type": "cnn",
+    "input_shape": [
+        100,
+        2
+    ],
+    "unique_classes_count": 3,
+    "class_names": [
+        "circle",
+        "rectangle",
+        "triangle"
+    ],
+    "metrics": [
+        "accuracy"
+    ],
+    "loss": "sparse_categorical_crossentropy"
+}
