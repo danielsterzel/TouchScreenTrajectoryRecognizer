@@ -13,8 +13,6 @@ app = Flask(__name__, static_folder=const.FRONTEND_DIR, template_folder=const.FR
 
 os.makedirs(const.DATA_DIR, exist_ok=True)
 
-counter = func.get_next_index(const.DATA_DIR)
-
 
 @app.before_request
 def limit_remote_addr():
@@ -31,30 +29,24 @@ def serve_static_files(path):
 
 
 @app.route("/submit-img", methods=["POST"])
-def submit_points():
-    global counter #global - use from global scope
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "No data provided"}), 400
+def submit_img():
 
+    file = request.files["image"]
+    print(f"Request files:\n{request.files}")
 
-    filename = f"points_{counter}.json"
-    filepath = os.path.join(const.DATA_DIR, filename)
-    with open(filepath, "w") as file:
-        json.dump(data, file, indent=2)  # type: ignore
-
-    counter += 1
-
-    return jsonify(
-        {"status": "success",
-         "file": filename,
-         "points received": len(data)
-         }
-    )
+    file_path = func.get_next_filename()
+    file.save(file_path)
+    return {
+        "status": "success",
+        "path": file_path
+    }
+    # img = func.load_image_from_request(file)
+    # img = func.preprocess_image(img)
+    # return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
-    func.preprocess_data_for_model()
-    mrf.run_all_models()
+    # func.preprocess_data_for_model()
+    # mrf.run_all_models()
     # mrf.build_and_run_all_models()
     app.run(host="0.0.0.0", port=5000,debug=True)
 

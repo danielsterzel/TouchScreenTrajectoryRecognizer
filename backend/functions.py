@@ -4,12 +4,20 @@ import shutil
 import numpy as np
 import constants as const
 from scipy.interpolate import interp1d
-from PIL import Image, ImageDraw
+import cv2
+import base64
 
-def get_next_index(root_dir):
-    existing = [int(file.split('_')[1].split('.')[0]) for file in os.listdir(root_dir)
-                if file.startswith('points_')]
-    return max(existing, default=0)
+
+# def get_next_index(root_dir):
+#     existing = [int(file.split('_')[1].split('.')[0]) for file in os.listdir(root_dir)
+#                 if file.startswith('points_')]
+#     return max(existing, default=0)
+
+def get_next_filename(img_dir="data/raw_images"):
+    os.makedirs(img_dir, exist_ok=True)
+    files = [file for file in os.listdir(img_dir) if file.startswith("drawing")]
+    index = len(files)
+    return os.path.join(img_dir, f"drawing_{index}.png")
 
 def get_json_files_lazily(root_dir):
     for dir_path, _, file_names in os.walk(root_dir):
@@ -89,22 +97,20 @@ def preprocess_data_for_model(num_of_samples = 100):
 
     print("All trajectories have been preprocessed and saved in: processed_data folder . . .")
 
-# def trajectory_to_image(points, size=(64,64), line_width=2):
-#
-#     img = Image.new("L", size, color=0)
-#     draw = ImageDraw.Draw(img)
-#
-#     points = np.array(points)
-#     points = points - points.min(axis=0)
-#     points = points / points.max(axis=0)
-#     points = points * (np.array(size) - 1)
-#
-#     for i in range(1, len(points)):
-#         p1 = tuple(map(int, points[i - 1]))
-#         p2 = tuple(map(int, points[i]))
-#         draw.line([p1, p2], fill=255, width=line_width)
-#
-#     return np.array(img) / 255.0
+
+def load_image_from_request(request_file):
+    file_bytes = np.frombuffer(request_file.read(), np.uint8)
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
+    return img
+
+def preprocess_image(img, size=(64,64)):
+    img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
+    print(img)
+    img = img.astype('float32') / 255.0
+    print(f"img: {img} and image dtype: {img.dtype}")
+    img = img.reshape(size[0], size[1], 1)
+    print(img)
+    return img
 
 def remove_and_reprocess_data(data_root_dir=const.PROCESSED_DATA_DIR):
 

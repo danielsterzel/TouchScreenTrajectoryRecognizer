@@ -152,6 +152,7 @@ class ClassifierWrapper:
 
     def _create_2d_cnn(self):
 
+        self.input_shape = (64,64, 1)
         cnn_2d = models.Sequential([
         layers.Input(shape=self.input_shape),
             # more filters = width of layers = more features learned = more expressive power

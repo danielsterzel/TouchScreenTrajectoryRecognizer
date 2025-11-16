@@ -62,20 +62,21 @@ function clearCanvas() {
 
 
 // ---------------------- sending image to backend ----------------------
-function getImageData(){
-    return canvas.toDataURL("image/png")
-}
 
-document.getElementById("sendData").addEventListener("click", async () => {
-    const img = getImageData()
-    const response = await fetch("/submit-img", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({image: img})
+document.getElementById("sendData").addEventListener("click", () => {
+    canvas.toBlob(async (blob) => {
+        const form = new FormData();
+        form.append("image", blob, "drawing.png");
+
+        const response = await fetch("/submit-img", {
+            method: "POST",
+            body: form
+        })
+        const result = await response.json()
+        console.log(result);
+        clearCanvas();
     })
-    const result = await response.json();
-    console.log("Server response: ", result);
-    clearCanvas();
+
 })
 
 // ---------------------- Events ----------------------
