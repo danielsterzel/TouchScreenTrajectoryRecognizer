@@ -10,7 +10,7 @@ import json
 
 
 class ClassifierWrapper:
-    available_model_types = ["cnn", "lstm", "mlp", "hybrid_cnn_lstm"]
+    available_model_types = ["cnn", "lstm", "mlp", "hybrid_cnn_lstm", "2d_cnn", "ResNet18"]
     EARLY_STOPPER_PUBLIC_PARAMS = {
         "monitor",
         "min_delta",
@@ -181,6 +181,10 @@ class ClassifierWrapper:
             layers.Dense(self.unique_classes_count, activation=self.output_activation_function),
         ])
         return cnn_2d
+
+    def _create_res_net_18(self):
+        self.input_shape = (64,64, 1)
+        res_net_18 = models.Sequential([])
     def _create_hybrid_cnn_lstm(self):
         hybrid = models.Sequential([
             layers.Input(shape = self.input_shape),

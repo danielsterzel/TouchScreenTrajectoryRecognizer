@@ -40,11 +40,10 @@ def submit_img():
         "status": "success",
         "path": file_path
     }
-    # img = func.load_image_from_request(file)
-    # img = func.preprocess_image(img)
-    # return jsonify({"status": "ok"})
+
 
 if __name__ == "__main__":
+
     # func.preprocess_data_for_model()
     # mrf.run_all_models()
     # mrf.build_and_run_all_models()
