@@ -30,7 +30,7 @@ def serve_static_files(path):
     return send_from_directory(app.static_folder, path)
 
 
-@app.route("/submit-points", methods=["POST"])
+@app.route("/submit-img", methods=["POST"])
 def submit_points():
     global counter #global - use from global scope
     data = request.get_json()

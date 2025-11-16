@@ -89,22 +89,22 @@ def preprocess_data_for_model(num_of_samples = 100):
 
     print("All trajectories have been preprocessed and saved in: processed_data folder . . .")
 
-def trajectory_to_image(points, size=(64,64), line_width=2):
-
-    img = Image.new("L", size, color=0)
-    draw = ImageDraw.Draw(img)
-
-    points = np.array(points)
-    points = points - points.min(axis=0)
-    points = points / points.max(axis=0)
-    points = points * (np.array(size) - 1)
-
-    for i in range(1, len(points)):
-        p1 = tuple(map(int, points[i - 1]))
-        p2 = tuple(map(int, points[i]))
-        draw.line([p1, p2], fill=255, width=line_width)
-
-    return np.array(img) / 255.0
+# def trajectory_to_image(points, size=(64,64), line_width=2):
+#
+#     img = Image.new("L", size, color=0)
+#     draw = ImageDraw.Draw(img)
+#
+#     points = np.array(points)
+#     points = points - points.min(axis=0)
+#     points = points / points.max(axis=0)
+#     points = points * (np.array(size) - 1)
+#
+#     for i in range(1, len(points)):
+#         p1 = tuple(map(int, points[i - 1]))
+#         p2 = tuple(map(int, points[i]))
+#         draw.line([p1, p2], fill=255, width=line_width)
+#
+#     return np.array(img) / 255.0
 
 def remove_and_reprocess_data(data_root_dir=const.PROCESSED_DATA_DIR):
 

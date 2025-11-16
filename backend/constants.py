@@ -8,5 +8,5 @@ MODELS_DIR = os.path.join(ROOT_DIR, "models")
 DATA_DIR = os.path.join(BACKEND_DIR, "data")
 PROCESSED_DATA_DIR = os.path.join(BACKEND_DIR, "processed_data")
 
-ALLOWED_IP_ADDRESSES = ["192.168.40.23", "127.0.0.1", "192.168.40.46"]
+ALLOWED_IP_ADDRESSES = ["192.168.40.23", "127.0.0.1", "192.168.40.46", "192.168.40.41"]
 SIMPLE_MLP_MODEL = "simple_MLP.keras"

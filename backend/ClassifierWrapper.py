@@ -75,7 +75,6 @@ class ClassifierWrapper:
         print(f"Successfully loaded model from {filepath} and it's params from {json_config_path} config file.")
 
     def _create_mlp(self):
-
         mlp_model = models.Sequential([
             layers.Input(shape=self.input_shape),
             layers.Flatten(),
