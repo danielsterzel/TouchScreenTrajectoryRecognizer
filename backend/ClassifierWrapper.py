@@ -78,6 +78,7 @@ class ClassifierWrapper:
 
         mlp_model = models.Sequential([
             layers.Input(shape=self.input_shape),
+            layers.Flatten(),
             layers.Dense(128, activation='relu'),
             layers.Dense(64, activation='relu'),
             layers.Dense(self.unique_classes_count, activation=self.output_activation_function),
@@ -150,6 +151,36 @@ class ClassifierWrapper:
 
         return cnn_1d
 
+    def _create_2d_cnn(self):
+
+        cnn_2d = models.Sequential([
+        layers.Input(shape=self.input_shape),
+            # more filters = width of layers = more features learned = more expressive power
+            # block 1
+            layers.Conv2D(32, kernel_size=3, activation="relu", padding='same'),
+            layers.BatchNormalization(),
+            layers.MaxPooling2D((2,2)),
+
+            # block 2
+            layers.Conv2D(64, kernel_size=3, activation="relu", padding='same'),
+            layers.BatchNormalization(),
+            layers.MaxPooling2D((2,2)),
+            layers.Dropout(0.25),
+
+            # block 3
+            layers.Conv2D(128, kernel_size=3, activation="relu", padding='same'),
+            layers.BatchNormalization(),
+            layers.MaxPooling2D((2, 2)),
+            layers.Dropout(0.3),
+
+            layers.Conv2D(64, (1,1), activation='relu'),
+            layers.GlobalAveragePooling2D(),
+
+            layers.Dense(128, activation='relu'),
+            layers.Dropout(0.4),
+            layers.Dense(self.unique_classes_count, activation=self.output_activation_function),
+        ])
+        return cnn_2d
     def _create_hybrid_cnn_lstm(self):
         hybrid = models.Sequential([
             layers.Input(shape = self.input_shape),

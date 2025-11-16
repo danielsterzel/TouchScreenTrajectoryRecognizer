@@ -5,6 +5,7 @@ import json
 import os
 import functions as func
 import constants as const
+import model_related_functions as mrf
 # from markupsafe import escape
 
 app = Flask(__name__, static_folder=const.FRONTEND_DIR, template_folder=const.FRONTEND_DIR)
@@ -53,4 +54,8 @@ def submit_points():
 
 if __name__ == "__main__":
     func.preprocess_data_for_model()
+    mrf.run_all_models()
+    # mrf.build_and_run_all_models()
     app.run(host="0.0.0.0", port=5000,debug=True)
+
+

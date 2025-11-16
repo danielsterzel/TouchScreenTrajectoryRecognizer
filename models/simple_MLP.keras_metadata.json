@@ -1,7 +1,8 @@
 {
     "model_type": "mlp",
     "input_shape": [
-        200
+        100,
+        2
     ],
     "unique_classes_count": 3,
     "class_names": [
@@ -265,6 +266,28 @@
         "triangle",
         "triangle",
         "triangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
+        "rectangle",
         "rectangle",
         "rectangle",
         "rectangle",

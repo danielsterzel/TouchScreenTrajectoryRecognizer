@@ -4,6 +4,7 @@ import shutil
 import numpy as np
 import constants as const
 from scipy.interpolate import interp1d
+from PIL import Image, ImageDraw
 
 def get_next_index(root_dir):
     existing = [int(file.split('_')[1].split('.')[0]) for file in os.listdir(root_dir)
@@ -87,6 +88,23 @@ def preprocess_data_for_model(num_of_samples = 100):
             json.dump(normalized_points.tolist(), f, indent=2) # type: ignore
 
     print("All trajectories have been preprocessed and saved in: processed_data folder . . .")
+
+def trajectory_to_image(points, size=(64,64), line_width=2):
+
+    img = Image.new("L", size, color=0)
+    draw = ImageDraw.Draw(img)
+
+    points = np.array(points)
+    points = points - points.min(axis=0)
+    points = points / points.max(axis=0)
+    points = points * (np.array(size) - 1)
+
+    for i in range(1, len(points)):
+        p1 = tuple(map(int, points[i - 1]))
+        p2 = tuple(map(int, points[i]))
+        draw.line([p1, p2], fill=255, width=line_width)
+
+    return np.array(img) / 255.0
 
 def remove_and_reprocess_data(data_root_dir=const.PROCESSED_DATA_DIR):
 
