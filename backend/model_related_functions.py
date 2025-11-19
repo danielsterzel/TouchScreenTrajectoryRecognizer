@@ -4,6 +4,12 @@ import numpy as np
 from backend import constants as const
 from tensorflow.keras.models import load_model
 from ClassifierWrapper import ClassifierWrapper
+import deeplake
+import functions as func
+import pickle
+
+CACHE_FILE = os.path.join(const.PROCESSED_DATA_DIR,"cached_kanji_dataset.npz") # change to processed data dir
+LABEL_MAP_FILE = os.path.join(const.PROCESSED_DATA_DIR,"cached_label_maps.pkl") # change to processed data dir
 
 def load_preprocessed_data(data_dir):
     data = []
@@ -26,6 +32,7 @@ def load_preprocessed_data(data_dir):
 
 
     return np.array(data), np.array(label)
+
 
 def return_model_path_if_exists(filename, directory=const.MODELS_DIR):
     if not filename.endswith(".keras"):
@@ -86,3 +93,62 @@ def run_all_models():
             continue
         model.prepare_data_for_model(data, test_size=0.2)
         model.predict(summary=True)
+
+
+
+def load_kanji_dataset(size=(64,64), use_cache=True):
+    if use_cache and os.path.exists(CACHE_FILE) and os.path.exists(LABEL_MAP_FILE):
+        print("Loading cached dataset...")
+        data = np.load(CACHE_FILE)
+        X = data["X"]
+        y = data["y"]
+
+        with open(LABEL_MAP_FILE, "rb") as f:
+            label_to_id, id_to_label = pickle.load(f)
+
+        return X, y, label_to_id, id_to_label
+
+    print("Cache not found. Loading and preprocessing DeepLake dataset...")
+    ds = deeplake.load("hub://activeloop/kuzushiji-kanji")
+
+    print("Collecting labels...")
+    all_labels = [sample["labels"].numpy().item() for sample in ds]
+
+    unique_labels = np.unique(all_labels)
+    label_to_id = {lbl: i for i, lbl in enumerate(unique_labels)}
+    id_to_label = {i: lbl for lbl, i in label_to_id.items()}
+
+    X = []
+    y = []
+
+    print("Processing images...")
+    length = len(ds)
+    for i, sample in enumerate(ds):
+        print(f"Iteration {i}/{length}")
+        img = sample["images"].numpy()
+        lbl = sample["labels"].numpy().item()
+
+        img = func.preprocess_image(img, size)
+
+        X.append(img)
+        y.append(label_to_id[lbl])
+
+    X = np.array(X)
+    y = np.array(y)
+
+    print("Saving dataset to cache...")
+    np.savez_compressed(CACHE_FILE, X=X, y=y)
+
+    with open(LABEL_MAP_FILE, "wb") as f:
+        pickle.dump((label_to_id, id_to_label), f)
+
+    print("Cache saved!")
+    return X, y, label_to_id, id_to_label
+
+def kanji_predict(model, img, id_to_label):
+    img = func.preprocess_image(img, size=(64,64))
+    img = np.expand_dims(img, axis=0) # because model outputs batch dimension as well
+
+    pred = model.predict(img)
+    cls = pred.argmax()
+    return id_to_label[cls]

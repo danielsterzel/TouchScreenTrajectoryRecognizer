@@ -1,11 +1,12 @@
 from tensorflow.keras import layers, models
 import ResNetBlock as resblock
-import BiLSTM as bilstm
+# import BiLSTM as bilstm
 
 class OCR:
     def __init__(self,  input_shape=(64,64,1)):
         self.model = None
         self.input_shape = input_shape
+        self.output = None
 
     def build_model(self, num_classes):
         inputs = layers.Input(shape=self.input_shape)
@@ -29,10 +30,16 @@ class OCR:
         x = resblock.build_residual_block(x, 512, stride=2) # (4, 4, 512)
         x = resblock.build_residual_block(x, 512) # (4, 4, 512) -> 4x4 feature map
 
-        # ----------- BiLSTM -----------
-        x = layers.Reshape((16, 512)) (x)
-        x = bilstm.apply_bi_lstm(x)
+        # # ----------- BiLSTM -----------
+        # x = layers.Reshape((4, 512 * 4)) (x)
+        # x = bilstm.apply_bi_lstm(x)
 
-        outputs = layers.Dense(num_classes)(x)
+        # outputs = layers.Dense(num_classes)(x)
+        # self.output = outputs
+        #
+        x = layers.GlobalAveragePooling2D()(x)
+        x = layers.Dropout(0.3)(x)
+        outputs = layers.Dense(num_classes, activation='softmax')(x)
         model = models.Model(inputs, outputs)
         self.model = model
+        return model

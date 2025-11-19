@@ -110,7 +110,7 @@ def get_next_filename(img_dir="data/raw_images"):
     return os.path.join(img_dir, f"drawing_{index}.png")
 
 
-def _preprocess_image(img, size):
+def preprocess_image(img, size):
     img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
     img = img.astype('float32') / 255.0
     img = img.reshape(size[0], size[1], 1)
@@ -127,6 +127,8 @@ def preprocess_all_images(root_dir=const.IMAGES_DIR, size=(64,64)):
                 if img.ndim != 2:
                     raise ValueError(f"Image {path} is not grayscale")
 
-                img = _preprocess_image(img, size)
+                img = preprocess_image(img, size)
 
                 yield path, img
+
+#
