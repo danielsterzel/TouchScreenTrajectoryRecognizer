@@ -69,16 +69,26 @@ document.getElementById("sendData").addEventListener("click", () => {
         const form = new FormData();
         form.append("image", blob, "drawing.png");
 
-        const response = await fetch("/submit-img", {
-            method: "POST",
-            body: form
-        })
-        const result = await response.json()
-        console.log(result);
+        try {
+            const response = await fetch("/predict", {
+                method: "POST",
+                body: form
+            })
+            const result = await response.json();
+
+            document.getElementById('prediction-result').textContent =
+                "Prediction: " + result.prediction;
+        }catch(err){
+            console.error(err);
+        }
         clearCanvas();
-    })
+    }, "image/png");
 
 })
+
+
+// ---------------------- receiving from backend ----------------------
+
 
 // ---------------------- Events ----------------------
 canvas.addEventListener('mousedown', startDrawing);
