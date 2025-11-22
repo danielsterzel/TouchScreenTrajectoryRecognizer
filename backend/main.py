@@ -1,12 +1,13 @@
+import cv2
 from flask import Flask, request, jsonify, send_from_directory
 from flask import abort
 # from flask import render_template
-import json
 import os
 import functions as func
 import constants as const
 import model_related_functions as mrf
 # from markupsafe import escape
+import pickle
 
 app = Flask(__name__, static_folder=const.FRONTEND_DIR, template_folder=const.FRONTEND_DIR)
 
@@ -27,6 +28,19 @@ def index():
 def serve_static_files(path):
     return send_from_directory(app.static_folder, path)
 
+@app.route("/predict", methods=["POST"])
+def predict():
+
+    image_data = request.files["image"].read()
+    # get label to id map:
+    with open(mrf.LABEL_MAP_FILE, "rb") as f:
+        label_to_id, id_to_label = pickle.load(f)
+
+    prediction = mrf.kanji_predict(image_data, id_to_label) #function already preprocesses the image
+
+    output = jsonify({"prediction" : prediction})
+
+    return output
 
 @app.route("/submit-img", methods=["POST"])
 def submit_img():

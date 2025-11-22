@@ -2,14 +2,19 @@ import json
 import os
 import numpy as np
 from backend import constants as const
+import tensorflow as tf
 from tensorflow.keras.models import load_model
 from ClassifierWrapper import ClassifierWrapper
 import deeplake
 import functions as func
 import pickle
+import cv2
+
 
 CACHE_FILE = os.path.join(const.PROCESSED_DATA_DIR,"cached_kanji_dataset.npz") # change to processed data dir
 LABEL_MAP_FILE = os.path.join(const.PROCESSED_DATA_DIR,"cached_label_maps.pkl") # change to processed data dir
+OCR_MODEL_PATH = os.path.join(const.MODELS_DIR, 'ocr_model.keras')
+OCR_MODEL = tf.keras.models.load_model(OCR_MODEL_PATH)
 
 def load_preprocessed_data(data_dir):
     data = []
@@ -145,10 +150,11 @@ def load_kanji_dataset(size=(64,64), use_cache=True):
     print("Cache saved!")
     return X, y, label_to_id, id_to_label
 
-def kanji_predict(model, img, id_to_label):
+def kanji_predict(img_data, id_to_label):
+    img = cv2.imdecode(np.frombuffer(img_data, np.uint8), cv2.IMREAD_GRAYSCALE)
     img = func.preprocess_image(img, size=(64,64))
     img = np.expand_dims(img, axis=0) # because model outputs batch dimension as well
 
-    pred = model.predict(img)
+    pred = OCR_MODEL.predict(img)
     cls = pred.argmax()
     return id_to_label[cls]
