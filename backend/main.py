@@ -32,6 +32,11 @@ def serve_static_files(path):
 def predict():
 
     image_data = request.files["image"].read()
+
+    save_path = func.get_next_filename()
+    with open(save_path, "wb") as f:
+        f.write(image_data)
+    print(f"Saved img to {save_path}")
     # get label to id map:
     with open(mrf.LABEL_MAP_FILE, "rb") as f:
         label_to_id, id_to_label = pickle.load(f)
