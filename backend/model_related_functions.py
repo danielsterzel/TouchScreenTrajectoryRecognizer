@@ -5,14 +5,11 @@ from backend import constants as const
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 from ClassifierWrapper import ClassifierWrapper
-import deeplake
 import functions as func
-import pickle
 import cv2
+import requests
 
 
-CACHE_FILE = os.path.join(const.PROCESSED_DATA_DIR,"cached_kanji_dataset.npz") # change to processed data dir
-LABEL_MAP_FILE = os.path.join(const.PROCESSED_DATA_DIR,"cached_label_maps.pkl") # change to processed data dir
 OCR_MODEL_PATH = os.path.join(const.MODELS_DIR, 'ocr_model.keras')
 OCR_MODEL = tf.keras.models.load_model(OCR_MODEL_PATH)
 
@@ -100,55 +97,36 @@ def run_all_models():
         model.predict(summary=True)
 
 
+def load_kanji_dataset(size=(64,64)):
+    kanji_dataset_path = os.path.join(const.DATA_DIR, 'kkanji2')
 
-def load_kanji_dataset(size=(64,64), use_cache=True):
-    if use_cache and os.path.exists(CACHE_FILE) and os.path.exists(LABEL_MAP_FILE):
-        print("Loading cached dataset...")
-        data = np.load(CACHE_FILE)
-        X = data["X"]
-        y = data["y"]
+    label_map_path = os.path.join(const.DATA_DIR, "class_to_kanji.json")
 
-        with open(LABEL_MAP_FILE, "rb") as f:
-            label_to_id, id_to_label = pickle.load(f)
+    with open(label_map_path) as f:
+        label_map = json.load(f)
 
-        return X, y, label_to_id, id_to_label
-
-    print("Cache not found. Loading and preprocessing DeepLake dataset...")
-    ds = deeplake.load("hub://activeloop/kuzushiji-kanji")
-
-    print("Collecting labels...")
-    all_labels = [sample["labels"].numpy().item() for sample in ds]
-
-    unique_labels = np.unique(all_labels)
-    label_to_id = {lbl: i for i, lbl in enumerate(unique_labels)}
-    id_to_label = {i: lbl for lbl, i in label_to_id.items()}
+    index_to_kanji = {int(k): v for k, v in label_map.items()}
+    kanji_to_index = {v:k for k, v in index_to_kanji.items()}
 
     X = []
     y = []
 
-    print("Processing images...")
-    length = len(ds)
-    for i, sample in enumerate(ds):
-        print(f"Iteration {i}/{length}")
-        img = sample["images"].numpy()
-        lbl = sample["labels"].numpy().item()
+    class_names = sorted(os.listdir(kanji_dataset_path)) # because we built the label map that way
+    for idx, folder in enumerate(class_names):
+        folder_path = os.path.join(kanji_dataset_path, folder)
+        if not os.path.isdir(folder_path):
+            continue
+        for file in os.listdir(folder_path):
+            if not file.endswith('.png'):
+                continue
+            kanji_img = cv2.imread(os.path.join(folder_path, file), cv2.IMREAD_GRAYSCALE)
+            kanji_img = func.preprocess_image(kanji_img, size=size)
+            X.append(kanji_img)
+            y.append(idx)
+        print(f"Index of the class:{idx}")
+    return np.array(X), np.array(y), kanji_to_index, index_to_kanji
 
-        img = func.preprocess_image(img, size)
 
-        X.append(img)
-        y.append(label_to_id[lbl])
-
-    X = np.array(X)
-    y = np.array(y)
-
-    print("Saving dataset to cache...")
-    np.savez_compressed(CACHE_FILE, X=X, y=y)
-
-    with open(LABEL_MAP_FILE, "wb") as f:
-        pickle.dump((label_to_id, id_to_label), f)
-
-    print("Cache saved!")
-    return X, y, label_to_id, id_to_label
 
 def kanji_predict(img_data, id_to_label):
     img = cv2.imdecode(np.frombuffer(img_data, np.uint8), cv2.IMREAD_GRAYSCALE)
@@ -156,5 +134,20 @@ def kanji_predict(img_data, id_to_label):
     img = np.expand_dims(img, axis=0) # because model outputs batch dimension as well
 
     pred = OCR_MODEL.predict(img)
-    cls = pred.argmax()
-    return id_to_label[cls]
+    cls = int(pred.argmax()) # convert np int to python int
+    unicode_code = id_to_label[cls]
+    kanji = chr(unicode_code)
+    print("id_to_label[cls]:", id_to_label[cls], type(id_to_label[cls]))
+
+    return kanji
+
+def get_kanji_meaning(kanji):
+    url = f"https://jisho.org/api/v1/search/words?keyword={kanji}"
+    try:
+        r = requests.get(url, timeout=3).json()
+
+        return r["data"][0]["senses"][0]["english_definitions"]
+    except Exception as e:
+        print(f"Lookup failed for {kanji} error: {e}")
+        return ["(no meaning found)"]
+

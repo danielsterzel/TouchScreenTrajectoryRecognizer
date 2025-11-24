@@ -2,6 +2,9 @@ venv/
 .DS_Store
 processed_data/
 __pycache__/
+kkanji2/
+raw_images/
+
 
 instance/
 

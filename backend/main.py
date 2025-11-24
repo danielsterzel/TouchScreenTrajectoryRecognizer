@@ -43,9 +43,12 @@ def predict():
 
     prediction = mrf.kanji_predict(image_data, id_to_label) #function already preprocesses the image
 
-    output = jsonify({"prediction" : prediction})
+    meaning = mrf.get_kanji_meaning(prediction)
 
-    return output
+    return jsonify({
+        "kanji": prediction,
+        "meaning": meaning
+    })
 
 @app.route("/submit-img", methods=["POST"])
 def submit_img():
