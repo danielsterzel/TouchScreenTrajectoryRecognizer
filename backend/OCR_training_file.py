@@ -83,4 +83,3 @@ history = model.fit(
 
 model.save(os.path.join(const.MODELS_DIR, "ocr_model.keras"))
 
-

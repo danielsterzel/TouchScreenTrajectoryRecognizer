@@ -8,6 +8,7 @@ import constants as const
 import model_related_functions as mrf
 # from markupsafe import escape
 import pickle
+import json
 
 app = Flask(__name__, static_folder=const.FRONTEND_DIR, template_folder=const.FRONTEND_DIR)
 
@@ -38,10 +39,12 @@ def predict():
         f.write(image_data)
     print(f"Saved img to {save_path}")
     # get label to id map:
-    with open(mrf.LABEL_MAP_FILE, "rb") as f:
-        label_to_id, id_to_label = pickle.load(f)
-
-    prediction = mrf.kanji_predict(image_data, id_to_label) #function already preprocesses the image
+    # with open(mrf.LABEL_MAP_FILE, "rb") as f:
+    #     label_to_id, id_to_label = pickle.load(f)
+    label_map_path = os.path.join(const.DATA_DIR, 'filtered_class_to_kanji.json')
+    with open(label_map_path, "r") as f:
+        id_to_kanji = json.load(f)
+    prediction = mrf.kanji_predict(image_data, id_to_kanji) #function already preprocesses the image
 
     meaning = mrf.get_kanji_meaning(prediction)
 

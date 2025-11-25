@@ -2,16 +2,12 @@ import json
 import os
 import numpy as np
 from backend import constants as const
-import tensorflow as tf
-from tensorflow.keras.models import load_model
 from ClassifierWrapper import ClassifierWrapper
 import functions as func
 import cv2
 import requests
 
 
-OCR_MODEL_PATH = os.path.join(const.MODELS_DIR, 'ocr_model.keras')
-OCR_MODEL = tf.keras.models.load_model(OCR_MODEL_PATH)
 
 def load_preprocessed_data(data_dir):
     data = []
@@ -127,17 +123,40 @@ def load_kanji_dataset(size=(64,64)):
     return np.array(X), np.array(y), kanji_to_index, index_to_kanji
 
 
-
 def kanji_predict(img_data, id_to_label):
     img = cv2.imdecode(np.frombuffer(img_data, np.uint8), cv2.IMREAD_GRAYSCALE)
-    img = func.preprocess_image(img, size=(64,64))
-    img = np.expand_dims(img, axis=0) # because model outputs batch dimension as well
+    # img = func.preprocess_image(img, size=(64,64))
+    # img = cv2.GaussianBlur(img, (5, 5), 0)
+    # noise = np.random.normal(0, 10, img.shape).astype(np.float32)
+    # img += noise
+    # img = np.clip(img, 0, 255) / 255.0
+    # img = np.expand_dims(img, axis=0) # because model outputs batch dimension as well
 
-    pred = OCR_MODEL.predict(img)
-    cls = int(pred.argmax()) # convert np int to python int
-    unicode_code = id_to_label[cls]
-    kanji = chr(unicode_code)
-    print("id_to_label[cls]:", id_to_label[cls], type(id_to_label[cls]))
+    #
+    #
+    # testing this:
+
+    img = 255 - img
+    img = cv2.resize(img, (64, 64), interpolation=cv2.INTER_AREA)
+    img = cv2.GaussianBlur(img, (5, 5), 0)
+    noise = np.random.normal(0, 8, img.shape).astype(np.float32)
+    img = img.astype(np.float32) + noise
+    img = np.clip(img, 0, 255) / 255.0
+    img = img.reshape(1, 64, 64, 1)
+
+    #
+    #
+    #
+
+    pred = const.OCR_MODEL.predict(img)
+    # cls = int(pred.argmax()) # convert np int to python int
+    # unicode_code = id_to_label[cls]
+    # kanji = chr(unicode_code)
+    # print("id_to_label[cls]:", id_to_label[cls], type(id_to_label[cls]))
+    print(f"prediction: {pred}")
+    prediction = np.argmax(pred)
+    kanji = id_to_label[str(prediction)]
+    print(f"returning kanji: {kanji}")
 
     return kanji
 

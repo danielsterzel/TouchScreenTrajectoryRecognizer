@@ -26,6 +26,7 @@ fonttools==4.60.1
 frozenlist==1.8.0
 gast==0.6.0
 google-pasta==0.2.0
+graphviz==0.21
 grpcio==1.76.0
 h5py==3.15.1
 humbug==0.3.2
@@ -61,6 +62,7 @@ propcache==0.4.1
 protobuf==4.25.8
 pydantic==2.12.4
 pydantic_core==2.41.5
+pydot==4.0.1
 Pygments==2.19.2
 PyJWT==2.10.1
 pyparsing==3.2.5
