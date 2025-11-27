@@ -84,9 +84,10 @@ document.getElementById("sendData").addEventListener("click", () => {
             predDiv.style.fontSize = "50px";
             predDiv.style.textAlign = "center";
             predDiv.style.color = "white";
-            document.body.append(predDiv);
+            predDiv.style.display = "block";
+            predDiv.style.margin = "10px";
             setTimeout(() => {
-                document.body.removeChild(predDiv);
+                predDiv.textContent = "";
             }, 5000);
 
         }catch(err){
