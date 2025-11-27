@@ -12,5 +12,6 @@ PROCESSED_DATA_DIR = os.path.join(BACKEND_DIR, "processed_data")
 QUICKDRAW_OCR_MODEL_PATH = os.path.join(MODELS_DIR, 'quickdraw_ocr_model.keras')
 QUICKDRAW_OCR_MODEL = load_model(QUICKDRAW_OCR_MODEL_PATH)
 QUICKDRAW_LABEL_MAP = os.path.join(DATA_DIR, 'quickdraw_label_map.json')
+QUICKDRAW_HISTORY = os.path.join(MODELS_DIR, 'quickdraw_ocr_history.json')
 ALLOWED_IP_ADDRESSES = IP_ADDR.ALLOWED_ADDR
 SIMPLE_MLP_MODEL = "simple_MLP.keras"

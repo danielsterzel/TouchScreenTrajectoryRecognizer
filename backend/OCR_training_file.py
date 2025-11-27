@@ -65,18 +65,4 @@ history = model.fit(
 with open(os.path.join(const.MODELS_DIR, "quickdraw_ocr_history.json"), "w") as f:
     json.dump(history.history, f, indent=2)
 
-plt.plot(history.history['accuracy'], label='acc')
-plt.plot(history.history['val_accuracy'], label='val_acc')
-plt.legend()
-plt.title("Accuracy")
-plt.savefig(os.path.join(const.MODELS_DIR, "quickdraw_accuracy.png"))
-plt.close()
-
-plt.plot(history.history['loss'], label='loss')
-plt.plot(history.history['val_loss'], label='val_loss')
-plt.legend()
-plt.title("Loss")
-plt.savefig(os.path.join(const.MODELS_DIR, "quickdraw_loss.png"))
-plt.close()
-# maybe add more plots along the way --- move it to visualize.py also
 model.save(os.path.join(const.MODELS_DIR, "quickdraw_ocr_model.keras"))
