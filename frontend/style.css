@@ -171,9 +171,9 @@ body {
     color: black;
 }
 
-.prediction-result {
-    font-size: 20px;
-}
+/*.prediction-result {*/
+/*    font-size: 20px;*/
+/*}*/
 
 @media(max-width: 600px){
     .content {

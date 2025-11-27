@@ -81,8 +81,12 @@ document.getElementById("sendData").addEventListener("click", () => {
             })
             const result = await response.json();
 
-            document.getElementById('prediction-result').textContent =
-                "Prediction: " + result.prediction;
+            const div = document.getElementById('prediction-result')
+            div.textContent = `Prediction: ${result.prediction}`;
+            div.style.fontSize = "100px";
+            div.style.textAlign = "center";
+            div.style.color = "white";
+            document.body.append(div);
         }catch(err){
             console.error(err);
         }
@@ -90,10 +94,6 @@ document.getElementById("sendData").addEventListener("click", () => {
     }, "image/png");
 
 })
-
-
-// ---------------------- receiving from backend ----------------------
-
 
 // ---------------------- Events ----------------------
 canvas.addEventListener('mousedown', startDrawing);
