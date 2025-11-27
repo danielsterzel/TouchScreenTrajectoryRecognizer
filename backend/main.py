@@ -1,20 +1,15 @@
-import cv2
 from flask import Flask, request, jsonify, send_from_directory
 from flask import abort
 # from flask import render_template
+# from markupsafe import escape
 import os
 import functions as func
 import constants as const
 import model_related_functions as mrf
-# from markupsafe import escape
-import pickle
-import json
 
 app = Flask(__name__, static_folder=const.FRONTEND_DIR, template_folder=const.FRONTEND_DIR)
 
-
 os.makedirs(const.DATA_DIR, exist_ok=True)
-
 
 @app.before_request
 def limit_remote_addr():
@@ -23,7 +18,6 @@ def limit_remote_addr():
 @app.route('/')
 def index():
     return send_from_directory(app.template_folder, "index.html")
-
 
 @app.route("/<path:path>")
 def serve_static_files(path):
@@ -38,19 +32,11 @@ def predict():
     with open(save_path, "wb") as f:
         f.write(image_data)
     print(f"Saved img to {save_path}")
-    # get label to id map:
-    # with open(mrf.LABEL_MAP_FILE, "rb") as f:
-    #     label_to_id, id_to_label = pickle.load(f)
-    label_map_path = os.path.join(const.DATA_DIR, 'filtered_class_to_kanji.json')
-    with open(label_map_path, "r") as f:
-        id_to_kanji = json.load(f)
-    prediction = mrf.kanji_predict(image_data, id_to_kanji) #function already preprocesses the image
 
-    meaning = mrf.get_kanji_meaning(prediction)
-
+    pred = mrf.quickdraw_predict_img(image_data)
+    print(f'Prediction from quickdraw model: {pred}')
     return jsonify({
-        "kanji": prediction,
-        "meaning": meaning
+        "prediction": pred
     })
 
 @app.route("/submit-img", methods=["POST"])
@@ -66,9 +52,7 @@ def submit_img():
         "path": file_path
     }
 
-
 if __name__ == "__main__":
-
     # func.preprocess_data_for_model()
     # mrf.run_all_models()
     # mrf.build_and_run_all_models()

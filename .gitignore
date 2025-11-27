@@ -2,10 +2,11 @@ venv/
 .DS_Store
 processed_data/
 __pycache__/
-kkanji2/
+quickdraw_npy/
+quickdraw_images/
 raw_images/
 
-
+IP_ADDR.py
 instance/
 
 .idea/

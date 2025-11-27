@@ -1,5 +1,4 @@
 from OCR import OCR
-import numpy as np
 import tensorflow as tf
 import model_related_functions as mrf
 from tensorflow.keras.utils import to_categorical
@@ -8,6 +7,8 @@ import constants as const
 import os
 import json
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import matplotlib.pyplot as plt
+
 
 callbacks = [
     tf.keras.callbacks.ModelCheckpoint(
@@ -34,45 +35,26 @@ datagen = ImageDataGenerator(rotation_range=10,
     fill_mode='nearest'
 )
 
-X, y, kanji_to_index, index_to_kanji = mrf.load_kanji_dataset()
+X, y, label_to_id, id_to_label = mrf.load_quickdraw_dataset()
 
-unique, counts = np.unique(y, return_counts=True)
-
-valid_classes = unique[counts >= 3]
-mask = np.isin(y, valid_classes)
-
-X = X[mask]
-y = y[mask]
-
-print("Filtered to", len(valid_classes), "usable classes.")
-print("New dataset size:", X.shape[0])
-
-new_unique = np.unique(y)
-new_label_to_id = {old_id: new_idx for new_idx, old_id in enumerate(new_unique)}
-
-y = np.array([new_label_to_id[old] for old in y])
-
-num_classes = len(new_unique)
+num_classes = len(label_to_id)
 y_cat = to_categorical(y, num_classes=num_classes)
 
-index_to_kanji_filtered = {
-    new_id: index_to_kanji[old_id]
-    for old_id, new_id in new_label_to_id.items()
-}
-
-with open(os.path.join(const.DATA_DIR, "filtered_class_to_kanji.json"), "w", encoding="utf-8") as f:
-    json.dump(index_to_kanji_filtered, f, ensure_ascii=False, indent=2)
+with open(os.path.join(const.DATA_DIR, "quickdraw_label_map.json"), "w") as f:
+    json.dump(id_to_label, f, indent=2)
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y_cat, test_size=0.1, random_state=42, shuffle=True, stratify=y
 )
 
-ocr = OCR(input_shape=(64,64,1))
+ocr = OCR()
 model = ocr.build_model(num_classes=num_classes)
 
 model.compile(optimizer='adam',
               loss= tf.keras.losses.CategoricalCrossentropy(label_smoothing=0.1),
-              metrics=['accuracy'])
+              metrics=['accuracy',
+                       tf.keras.metrics.Recall(name='recall'),
+                       tf.keras.metrics.Precision(name='precision')])
 
 history = model.fit(
     datagen.flow(X_train, y_train, batch_size=64),
@@ -80,6 +62,21 @@ history = model.fit(
     epochs=20,
     callbacks=callbacks
 )
+with open(os.path.join(const.MODELS_DIR, "quickdraw_ocr_history.json"), "w") as f:
+    json.dump(history.history, f, indent=2)
 
-model.save(os.path.join(const.MODELS_DIR, "ocr_model.keras"))
+plt.plot(history.history['accuracy'], label='acc')
+plt.plot(history.history['val_accuracy'], label='val_acc')
+plt.legend()
+plt.title("Accuracy")
+plt.savefig(os.path.join(const.MODELS_DIR, "quickdraw_accuracy.png"))
+plt.close()
 
+plt.plot(history.history['loss'], label='loss')
+plt.plot(history.history['val_loss'], label='val_loss')
+plt.legend()
+plt.title("Loss")
+plt.savefig(os.path.join(const.MODELS_DIR, "quickdraw_loss.png"))
+plt.close()
+# maybe add more plots along the way --- move it to visualize.py also
+model.save(os.path.join(const.MODELS_DIR, "quickdraw_ocr_model.keras"))

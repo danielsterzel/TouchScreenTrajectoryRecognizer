@@ -3,11 +3,7 @@ import os
 import numpy as np
 from backend import constants as const
 from ClassifierWrapper import ClassifierWrapper
-import functions as func
 import cv2
-import requests
-
-
 
 def load_preprocessed_data(data_dir):
     data = []
@@ -28,9 +24,7 @@ def load_preprocessed_data(data_dir):
             data.append(np.array(file_data))
             label.append(directory[:-1])
 
-
     return np.array(data), np.array(label)
-
 
 def return_model_path_if_exists(filename, directory=const.MODELS_DIR):
     if not filename.endswith(".keras"):
@@ -83,90 +77,98 @@ def build_and_run_all_models():
 def run_all_models():
     models_ = get_all_models(const.MODELS_DIR)
     data, labels = load_preprocessed_data(const.PROCESSED_DATA_DIR)
-    # for model in models_.values():
-    #     model.prepare_data_for_model(data, test_size=0.2)
-    #     model.predict(summary=True)
     for model_name, model in models_.items():
         if model_name == "simple_MLP":
             continue
         model.prepare_data_for_model(data, test_size=0.2)
         model.predict(summary=True)
 
-
-def load_kanji_dataset(size=(64,64)):
-    kanji_dataset_path = os.path.join(const.DATA_DIR, 'kkanji2')
-
-    label_map_path = os.path.join(const.DATA_DIR, "class_to_kanji.json")
-
-    with open(label_map_path) as f:
-        label_map = json.load(f)
-
-    index_to_kanji = {int(k): v for k, v in label_map.items()}
-    kanji_to_index = {v:k for k, v in index_to_kanji.items()}
+def load_quickdraw_dataset(size=(64, 64), max_per_class=1000):
+    dataset_dir = os.path.join(const.DATA_DIR, "quickdraw_images")
 
     X = []
     y = []
 
-    class_names = sorted(os.listdir(kanji_dataset_path)) # because we built the label map that way
-    for idx, folder in enumerate(class_names):
-        folder_path = os.path.join(kanji_dataset_path, folder)
-        if not os.path.isdir(folder_path):
-            continue
-        for file in os.listdir(folder_path):
-            if not file.endswith('.png'):
+    class_names = sorted(
+        directory for directory in os.listdir(dataset_dir)
+        if os.path.isdir(os.path.join(dataset_dir, directory))
+    )
+
+    label_to_id = {class_name: id_ for id_, class_name in enumerate(class_names)}
+    id_to_label = {str(id_): class_name for class_name, id_ in label_to_id.items()}
+
+    print(f"Detected {len(class_names)} classes:")
+    print(class_names)
+
+    for class_name in class_names:
+        class_id = label_to_id[class_name]
+        class_dir = os.path.join(dataset_dir, class_name)
+
+        print(f" Loading class: {class_name}")
+        count = 0
+
+        for filename in os.listdir(class_dir):
+            if not filename.endswith(".png"):
                 continue
-            kanji_img = cv2.imread(os.path.join(folder_path, file), cv2.IMREAD_GRAYSCALE)
-            kanji_img = func.preprocess_image(kanji_img, size=size)
-            X.append(kanji_img)
-            y.append(idx)
-        print(f"Index of the class:{idx}")
-    return np.array(X), np.array(y), kanji_to_index, index_to_kanji
 
+            img_path = os.path.join(class_dir, filename)
+            img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
 
-def kanji_predict(img_data, id_to_label):
-    img = cv2.imdecode(np.frombuffer(img_data, np.uint8), cv2.IMREAD_GRAYSCALE)
-    # img = func.preprocess_image(img, size=(64,64))
-    # img = cv2.GaussianBlur(img, (5, 5), 0)
-    # noise = np.random.normal(0, 10, img.shape).astype(np.float32)
-    # img += noise
-    # img = np.clip(img, 0, 255) / 255.0
-    # img = np.expand_dims(img, axis=0) # because model outputs batch dimension as well
+            if img is None:
+                print(f" Could not read {img_path}.")
+                continue
 
-    #
-    #
-    # testing this:
+            img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
+            img = img.astype("float32") / 255.0
+            img = img.reshape(size[0], size[1], 1)
 
+            X.append(img)
+            y.append(class_id)
+            count += 1
+
+            if count >= max_per_class:
+                break
+
+    X = np.array(X)
+    y = np.array(y)
+    print("Dataset loaded . . .")
+    print(f"X shape: {X.shape}")
+    print(f"y shape: {y.shape}")
+
+    return X, y, label_to_id, id_to_label
+
+def quickdraw_predict_img(img_data):
+
+    img = cv2.imdecode(np.frombuffer(img_data, np.uint8),  cv2.IMREAD_GRAYSCALE)
+    if img is None:
+        raise ValueError("Couldn't decode the image")
     img = 255 - img
-    img = cv2.resize(img, (64, 64), interpolation=cv2.INTER_AREA)
-    img = cv2.GaussianBlur(img, (5, 5), 0)
-    noise = np.random.normal(0, 8, img.shape).astype(np.float32)
-    img = img.astype(np.float32) + noise
-    img = np.clip(img, 0, 255) / 255.0
-    img = img.reshape(1, 64, 64, 1)
 
-    #
-    #
-    #
+    _, img = cv2.threshold(img, 20, 255, cv2.THRESH_BINARY)
+    coords = cv2.findNonZero(img)
+    if coords is None:
+        return None
+    x, y, w, h = cv2.boundingRect(coords)
+    cropped = img[y:y + h, x:x + w]
 
-    pred = const.OCR_MODEL.predict(img)
-    # cls = int(pred.argmax()) # convert np int to python int
-    # unicode_code = id_to_label[cls]
-    # kanji = chr(unicode_code)
-    # print("id_to_label[cls]:", id_to_label[cls], type(id_to_label[cls]))
-    print(f"prediction: {pred}")
-    prediction = np.argmax(pred)
-    kanji = id_to_label[str(prediction)]
-    print(f"returning kanji: {kanji}")
+    side = max(w, h)
+    square = 255 * np.ones((side, side), dtype=np.uint8)
+    offset_x = (side - w) // 2
+    offset_y = (side - h) // 2
+    square[offset_y:offset_y + h, offset_x:offset_x + w] = cropped
 
-    return kanji
+    img = cv2.resize(square, (64, 64), interpolation=cv2.INTER_AREA)
+    cv2.imwrite(os.path.join(const.PROCESSED_DATA_DIR, 'processed_img.png'), img)
+    img = img.astype(np.float32) / 255.0
 
-def get_kanji_meaning(kanji):
-    url = f"https://jisho.org/api/v1/search/words?keyword={kanji}"
-    try:
-        r = requests.get(url, timeout=3).json()
+    img = img.reshape(64, 64, 1)
+    img = np.expand_dims(img, axis=0)
+    model = const.QUICKDRAW_OCR_MODEL
 
-        return r["data"][0]["senses"][0]["english_definitions"]
-    except Exception as e:
-        print(f"Lookup failed for {kanji} error: {e}")
-        return ["(no meaning found)"]
+    class_probabilities = model.predict(img)
+    classification = int(np.argmax(class_probabilities))
 
+    with open(const.QUICKDRAW_LABEL_MAP, "r") as f:
+        quickdraw_label_map = json.load(f)
+
+    return quickdraw_label_map[str(classification)]

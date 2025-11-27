@@ -13,7 +13,10 @@ function resizeCanvas() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.scale(ratio, ratio);
 
-  clearCanvas();
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // clearCanvas();
 }
 
 resizeCanvas();
@@ -46,7 +49,7 @@ function draw(e) {
     const position = getCanvasPosition(e);
     ctx.lineTo(position.x, position.y);
     ctx.strokeStyle = "white";
-    ctx.lineWidth = 6;
+    ctx.lineWidth = 10;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.stroke();
@@ -57,7 +60,9 @@ function stopDrawing(e) {
     ctx.closePath();
 }
 function clearCanvas() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
 document.getElementById('clearCanvas').addEventListener('click', clearCanvas)

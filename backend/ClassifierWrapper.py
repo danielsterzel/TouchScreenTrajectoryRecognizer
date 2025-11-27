@@ -183,8 +183,9 @@ class ClassifierWrapper:
         return cnn_2d
 
     def _create_res_net_18(self):
-        self.input_shape = (64,64, 1)
-        res_net_18 = models.Sequential([])
+        # self.input_shape = (64,64, 1)
+        # res_net_18 = models.Sequential([])
+        pass
     def _create_hybrid_cnn_lstm(self):
         hybrid = models.Sequential([
             layers.Input(shape = self.input_shape),

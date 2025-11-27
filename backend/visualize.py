@@ -1,5 +1,3 @@
-import matplotlib.pyplot as plt
-import functions as f
 import constants as const
 from tensorflow.keras.utils import plot_model
 #
@@ -11,5 +9,5 @@ from tensorflow.keras.utils import plot_model
 #     plt.axis('equal')
 #     plt.show()
 
-model = const.OCR_MODEL
-plot_model(model, to_file='ocr_model.png', show_shapes=True, show_layer_names=True)
+model = const.QUICKDRAW_OCR_MODEL
+plot_model(model, to_file='ocr_model.png', show_shapes=True, show_layer_names=True, dpi=96)

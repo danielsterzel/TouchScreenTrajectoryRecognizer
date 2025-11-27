@@ -136,7 +136,8 @@ body {
 }
 
 #drawCanvas {
-    width: 100%;
+    /*width: 100%;*/
+    width: 300px;
     height: auto;
     background-color: #ffffff10;
     border: 2px solid white;

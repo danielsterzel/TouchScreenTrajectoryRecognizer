@@ -1,7 +1,6 @@
 from backend import model_related_functions as mrf, constants as const
 from ClassifierWrapper import ClassifierWrapper
 
-
 print(const.MODELS_DIR)
 data, labels = mrf.load_preprocessed_data(const.PROCESSED_DATA_DIR)
 data_flat = data.reshape((data.shape[0], -1))

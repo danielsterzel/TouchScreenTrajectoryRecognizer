@@ -1,19 +1,16 @@
 from tensorflow.keras import layers
 from tensorflow.keras.regularizers import l2
 
-
 def conv_bn_relu(x, filters, kernel_size=3, stride=1):
     x = layers.Conv2D(filters, kernel_size, strides=stride, padding='same', use_bias=False, kernel_regularizer=l2(1e-4))(x)
     x = layers.BatchNormalization()(x)
     x = layers.ReLU()(x)
     return x
 
-
 def conv_bn(x, filters, kernel_size=3, stride=1):
     x = layers.Conv2D(filters,kernel_size, strides=stride, padding='same', use_bias=False, kernel_regularizer=l2(1e-4))(x)
     x = layers.BatchNormalization()(x)
     return x
-
 
 def build_residual_block(x, filters, stride=1):
     skip = x

@@ -6,13 +6,10 @@ import constants as const
 from scipy.interpolate import interp1d
 import cv2
 
-
-# def get_next_index(root_dir):
-#     existing = [int(file.split('_')[1].split('.')[0]) for file in os.listdir(root_dir)
-#                 if file.startswith('points_')]
-#     return max(existing, default=0)
-
-
+def get_next_index(root_dir):
+    existing = [int(file.split('_')[1].split('.')[0]) for file in os.listdir(root_dir)
+                if file.startswith('points_')]
+    return max(existing, default=0)
 
 def get_json_files_lazily(root_dir):
     for dir_path, _, file_names in os.walk(root_dir):
@@ -23,7 +20,6 @@ def get_json_files_lazily(root_dir):
                     data = json.load(f)
                 yield path, data
 
-
 def get_x_y_coordinates_from_json(json_file_data, filename=None):
     try:
         return [(p['x'], p['y']) for p in json_file_data]
@@ -31,7 +27,6 @@ def get_x_y_coordinates_from_json(json_file_data, filename=None):
         print(f"Invalid json file: {filename}")
         print("Invalid JSON format:", json_file_data)
         raise
-
 
 def shift_points_to_0_0(json_file_data):
     if not json_file_data:
@@ -61,13 +56,11 @@ def resample_trajectory(trajectory_data_from_shifted_json_file, num_of_samples=1
 
     return np.column_stack((x_resampled, y_resampled))
 
-
 def normalize_points(resampled_trajectory_data):
     x, y = resampled_trajectory_data[:, 0], resampled_trajectory_data[:, 1]
     scale = np.sqrt((x.max() - x.min()) ** 2 + (y.max() - y.min()) ** 2)
     normalized_points = resampled_trajectory_data / scale
     return normalized_points
-
 
 def preprocess_data_for_model(num_of_samples=100):
     """
@@ -109,12 +102,36 @@ def get_next_filename(img_dir="data/raw_images"):
     index = len(files)
     return os.path.join(img_dir, f"drawing_{index}.png")
 
-
 def preprocess_image(img, size):
     img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
     img = img.astype('float32') / 255.0
     img = img.reshape(size[0], size[1], 1)
     return img
+
+def preprocess_canvas_img(img):
+    img = 255 - img
+    _, threshold_img = cv2.threshold(img, 10, 255, cv2.THRESH_BINARY) # noise removal
+    coords = cv2.findNonZero(threshold_img)
+    x, y, w, h = cv2.boundingRect(coords)
+    cropped_img = img[y:y + h, x:x + w]
+    print(f"Cropped image shape: {cropped_img.shape}")
+
+    side = max(w,h)
+    square_img = 255 * np.ones((side, side), dtype=np.uint8)
+    print(f"Cropped image rectangle: {square_img.shape}")
+    offset_x = (side - w) // 2
+    offset_y = (side - h) // 2
+
+    print(f"offset_x: {offset_x}, offset_y: {offset_y}")
+    square_img[offset_y:offset_y + h, offset_x:offset_x + w] = cropped_img
+    square_img = cv2.dilate(square_img, np.ones((3, 3), np.uint8), iterations=1)
+
+    resized = cv2.resize(square_img, (64, 64), interpolation=cv2.INTER_AREA)
+    resized = cv2.GaussianBlur(resized, (3, 3), 0)
+    final_img = resized.astype(np.float32) / 255.0
+    final_img = final_img.reshape(64, 64, 1)
+
+    return final_img
 
 def preprocess_all_images(root_dir=const.IMAGES_DIR, size=(64,64)):
     for dir_path, _ , filenames in os.walk(root_dir):
@@ -130,5 +147,3 @@ def preprocess_all_images(root_dir=const.IMAGES_DIR, size=(64,64)):
                 img = preprocess_image(img, size)
 
                 yield path, img
-
-#
