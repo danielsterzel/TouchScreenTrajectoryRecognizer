@@ -15,8 +15,6 @@ function resizeCanvas() {
 
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // clearCanvas();
 }
 
 resizeCanvas();
@@ -83,10 +81,14 @@ document.getElementById("sendData").addEventListener("click", () => {
 
             const div = document.getElementById('prediction-result')
             div.textContent = `Prediction: ${result.prediction}`;
-            div.style.fontSize = "100px";
+            div.style.fontSize = "50px";
             div.style.textAlign = "center";
             div.style.color = "white";
             document.body.append(div);
+            setTimeout(() => {
+                document.body.removeChild(div);
+            }, 5000);
+
         }catch(err){
             console.error(err);
         }
