@@ -79,14 +79,14 @@ document.getElementById("sendData").addEventListener("click", () => {
             })
             const result = await response.json();
 
-            const div = document.getElementById('prediction-result')
-            div.textContent = `Prediction: ${result.prediction}`;
-            div.style.fontSize = "50px";
-            div.style.textAlign = "center";
-            div.style.color = "white";
-            document.body.append(div);
+            const predDiv = document.getElementById('prediction-result')
+            predDiv.textContent = `Prediction: ${result.prediction}`;
+            predDiv.style.fontSize = "50px";
+            predDiv.style.textAlign = "center";
+            predDiv.style.color = "white";
+            document.body.append(predDiv);
             setTimeout(() => {
-                document.body.removeChild(div);
+                document.body.removeChild(predDiv);
             }, 5000);
 
         }catch(err){
