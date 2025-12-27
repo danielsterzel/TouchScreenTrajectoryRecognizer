@@ -11,10 +11,10 @@ app = Flask(__name__, static_folder=const.FRONTEND_DIR, template_folder=const.FR
 
 os.makedirs(const.DATA_DIR, exist_ok=True)
 
-@app.before_request
-def limit_remote_addr():
-    if request.remote_addr not in const.ALLOWED_IP_ADDRESSES:
-        abort(403)
+# @app.before_request
+# def limit_remote_addr():
+#     if request.remote_addr not in const.ALLOWED_IP_ADDRESSES:
+#         abort(403)
 @app.route('/')
 def index():
     return send_from_directory(app.template_folder, "index.html")
